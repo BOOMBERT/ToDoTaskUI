@@ -1,0 +1,17 @@
+.todo-card {
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.todo-card:hover {
+    background-color: rgba(0, 92, 187, 0.1);
+    border-color: var(--mat-sys-primary);
+    box-shadow: 0 2px 6px rgba(0, 92, 187, 0.2);
+    cursor: pointer;
+}
+
+.todo-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

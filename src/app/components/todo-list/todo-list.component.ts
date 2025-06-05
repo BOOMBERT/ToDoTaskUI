@@ -1,0 +1,54 @@
+import { Component, OnInit } from '@angular/core';
+import { ToDoItemService } from '../../services/todo-item.service';
+import { ToDoItem } from '../../models/todo-item';
+import { PaginationInfo } from '../../models/pagination-info';
+import { MatCardModule } from '@angular/material/card';
+import { CommonModule } from '@angular/common';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+
+@Component({
+  selector: 'app-todo-list',
+  imports: [CommonModule, MatCardModule, MatProgressBarModule, MatIconModule, MatButtonModule],
+  templateUrl: './todo-list.component.html',
+  styleUrl: './todo-list.component.css'
+})
+export class ToDoListComponent implements OnInit {
+  toDoItems: ToDoItem[] = [];
+  pagination: PaginationInfo = {
+    totalItemCount: 0,
+    totalPageCount: 0,
+    pageSize: 0,
+    currentPage: 0
+  };
+
+  constructor(private readonly toDoItemService: ToDoItemService) { }
+
+  ngOnInit(): void {
+    this.toDoItemService.getTodoItems().subscribe(response => {
+      this.toDoItems = response.data;
+      this.pagination = response.pagination;
+    })
+  }
+
+  markToDoItemAsDone(id: string, currentCompletionPercentage: number): void {
+    if (currentCompletionPercentage >= 100) return;
+
+    this.toDoItemService.markToDoItemAsDone(id).subscribe(() => {
+      const item = this.toDoItems.find(item => item.id === id);
+      if (item) {
+        item.completionPercentage = 100;
+      }
+    });
+  }
+
+  deleteToDoItem(id: string): void {
+    this.toDoItemService.deleteToDoItem(id).subscribe(() => {
+      const index = this.toDoItems.findIndex(item => item.id === id);
+      if (index !== -1) {
+        this.toDoItems.splice(index, 1);
+      }
+    });
+  }
+}
