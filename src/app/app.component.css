@@ -1,0 +1,24 @@
+.header-content {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+}
+
+.toggle-theme {
+  position: absolute;
+  right: 0;
+  transform: scale(0.9);
+}
+
+@media (max-width: 900px) {
+  .toggle-theme {
+    position: static;
+    transform: scale(0.8);
+  }
+
+  .header-content {
+    flex-direction: column;
+    position: static;
+  }
+}

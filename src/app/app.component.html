@@ -1,0 +1,16 @@
+<div class="container">
+    <div class="header-content">
+        <h1 style="text-align: center">Remember <span class="text-primary">TO DO</span> your tasks</h1>
+        <p class="toggle-theme">
+            <mat-slide-toggle 
+                labelPosition="before" 
+                [checked]="themeService.currentTheme() === 'dark'" 
+                (change)="themeService.toggleTheme()"
+                >
+                Dark mode
+            </mat-slide-toggle>
+        </p>
+    </div>
+</div>
+
+<router-outlet />
