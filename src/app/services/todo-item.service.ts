@@ -3,6 +3,7 @@ import { environment } from '../../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/internal/Observable';
 import { ToDoItemResponse } from '../models/todo-item-response';
+import { ToDoItem } from '../models/todo-item';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,11 @@ export class ToDoItemService {
 
   constructor(private readonly http: HttpClient) { }
 
-  getTodoItems() : Observable<ToDoItemResponse> {
+  addToDoItem(item: ToDoItem): Observable<void> {
+    return this.http.post<void>(this.apiUrl, item);
+  }
+
+  getToDoItems() : Observable<ToDoItemResponse> {
     return this.http.get<ToDoItemResponse>(this.apiUrl);
   }
 

@@ -7,10 +7,11 @@ import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-todo-list',
-  imports: [CommonModule, MatCardModule, MatProgressBarModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, RouterLink, MatCardModule, MatProgressBarModule, MatIconModule, MatButtonModule],
   templateUrl: './todo-list.component.html',
   styleUrl: './todo-list.component.css'
 })
@@ -26,7 +27,7 @@ export class ToDoListComponent implements OnInit {
   constructor(private readonly toDoItemService: ToDoItemService) { }
 
   ngOnInit(): void {
-    this.toDoItemService.getTodoItems().subscribe(response => {
+    this.toDoItemService.getToDoItems().subscribe(response => {
       this.toDoItems = response.data;
       this.pagination = response.pagination;
     })

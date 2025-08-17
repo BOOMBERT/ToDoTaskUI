@@ -1,0 +1,35 @@
+.todo-form {
+    display: flex;
+    justify-content: center;
+}
+
+.todo-form-container {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    background-color: var(--mat-sys-surface);
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: var(--mat-sys-corner-medium);
+    padding: 2.5rem;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.todo-form-container:hover {
+    background-color: rgba(0, 92, 187, 0.1);
+    border-color: var(--mat-sys-primary);
+    box-shadow: 0 2px 6px rgba(0, 92, 187, 0.2);
+}
+
+mat-form-field {
+    margin-bottom: 1rem;
+}
+
+mat-error {
+    font-size: 0.8em;
+}
+
+@media (max-width: 600px) {
+    .todo-form-container {
+        width: 90%;
+    }
+}

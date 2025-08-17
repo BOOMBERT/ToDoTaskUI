@@ -32,3 +32,10 @@ h1 {
 .text-primary {
   color: var(--mat-sys-primary);
 }
+
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: var(--mat-sys-surface) !important;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
