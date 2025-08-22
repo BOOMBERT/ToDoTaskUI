@@ -8,6 +8,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { ToDoDialogComponent } from '../todo-dialog/todo-dialog.component';
 
 @Component({
   selector: 'app-todo-list',
@@ -24,13 +26,36 @@ export class ToDoListComponent implements OnInit {
     currentPage: 0
   };
 
-  constructor(private readonly toDoItemService: ToDoItemService) { }
+  constructor(
+    private readonly toDoItemService: ToDoItemService,
+    private readonly dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
     this.toDoItemService.getToDoItems().subscribe(response => {
       this.toDoItems = response.data;
       this.pagination = response.pagination;
     })
+  }
+
+  openDialog(enterAnimationDuration: string, exitAnimationDuration: string, toDoItem: ToDoItem): void {
+    const dialogRef = this.dialog.open(ToDoDialogComponent, {
+      width: '80%',
+      data: toDoItem,
+      enterAnimationDuration,
+      exitAnimationDuration,
+      disableClose: true,
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (typeof result === 'number') {
+        const item = this.toDoItems.find(item => item.id === toDoItem.id);
+        if (item && item.completionPercentage !== result) {
+          item.completionPercentage = result;
+        }
+      }
+    });
   }
 
   markToDoItemAsDone(id: string, currentCompletionPercentage: number): void {

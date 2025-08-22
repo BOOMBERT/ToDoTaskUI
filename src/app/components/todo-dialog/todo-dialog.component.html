@@ -1,0 +1,21 @@
+<div class="todo-dialog">
+    <h2 class="text-primary">{{ data.title }}</h2>
+    <p>{{ data.description }}</p>
+    <p style="font-style: italic;">{{ data.expiryDateTimeUtc | date:'d MMMM y, HH:mm:ss' }}</p>
+    <form [formGroup]="toDoDialogForm">
+        <mat-form-field floatLabel="auto" style="width: 75%;">
+            <mat-label>Completion percentage</mat-label>
+            <input matInput
+                formControlName="completionPercentage"
+                type="number"
+                min="0" 
+                max="100" 
+                step="0.01"/>
+            <span matTextSuffix>%</span>
+        </mat-form-field>
+        <div class="todo-dialog-buttons">
+            <button mat-flat-button (click)="closeDialog()">Close</button>
+            <button mat-flat-button>Update</button>
+        </div>
+    </form>
+</div>

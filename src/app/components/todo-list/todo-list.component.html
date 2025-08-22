@@ -3,17 +3,17 @@
 
     @if (toDoItems.length > 0) {
         @for (toDoItem of toDoItems; track toDoItem.id) {
-            <mat-card appearance="outlined" class="todo-card">
+            <mat-card appearance="outlined" class="todo-card" (click)="openDialog('250ms', '250ms', toDoItem)">
                 <mat-card-header class="todo-card-header">
                     <div style="flex: 1;">
                         <mat-card-title>{{ toDoItem.title }}</mat-card-title>
                         <mat-card-subtitle style="font-style: italic; font-size: 0.9em;">{{ toDoItem.expiryDateTimeUtc | date:'d MMMM y, HH:mm:ss' }}</mat-card-subtitle>
                     </div>
                     <div>
-                        <button mat-icon-button (click)="deleteToDoItem(toDoItem.id)">
+                        <button mat-icon-button (click)="deleteToDoItem(toDoItem.id); $event.stopPropagation()">
                             <mat-icon>delete</mat-icon>
                         </button>
-                        <button mat-icon-button (click)="markToDoItemAsDone(toDoItem.id, toDoItem.completionPercentage)">
+                        <button mat-icon-button (click)="markToDoItemAsDone(toDoItem.id, toDoItem.completionPercentage); $event.stopPropagation()">
                             <mat-icon>check_circle</mat-icon>
                         </button>
                     </div>

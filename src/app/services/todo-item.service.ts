@@ -25,6 +25,10 @@ export class ToDoItemService {
     return this.http.patch<void>(`${this.apiUrl}/${id}/mark-as-done`, {});
   }
 
+  updateToDoItemCompletionPercentage(id: string, newPercentage: number): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/${id}/completion-percentage`, { completionPercentage: newPercentage });
+  }
+
   deleteToDoItem(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
