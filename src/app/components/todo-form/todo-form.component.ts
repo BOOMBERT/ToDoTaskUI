@@ -3,10 +3,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ToDoItemValidator } from '../../validators/todo-item.validator';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
-import {MatFormFieldModule} from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { ToDoItemService } from '../../services/todo-item.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToDoItem } from '../../models/todo-item';
 
 @Component({
@@ -21,6 +21,7 @@ export class ToDoFormComponent implements OnInit {
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly todoItemService: ToDoItemService
   ) { }
 
@@ -31,6 +32,16 @@ export class ToDoFormComponent implements OnInit {
       ExpiryDate: [null, [Validators.required, ToDoItemValidator.futureDate]],
       completionPercentage: [0, [Validators.required, Validators.pattern(/^100(\.0{0,2})?$|^([0-9]|[1-9][0-9])(\.[0-9]{0,2})?$/)]],
     });
+
+    let id = this.activatedRoute.snapshot.paramMap.get('id');
+    if (id) {
+      this.todoItemService.getToDoItem(id).subscribe(item => {
+        this.toDoForm.patchValue({
+          ...item,
+          ExpiryDate: this.formatDateForInput(new Date(item.expiryDateTimeUtc))
+        });
+      });
+    }
   }
 
   onSubmit(): void {
@@ -39,9 +50,25 @@ export class ToDoFormComponent implements OnInit {
       const toDoItemExpiryDate: Date = new Date(this.toDoForm.value.ExpiryDate);
       toDoitem.expiryDateTimeUtc = toDoItemExpiryDate.toISOString();
 
-      this.todoItemService.addToDoItem(toDoitem).subscribe(() => {
-        this.router.navigate(['/todo-items']);
-      });
+      let id = this.activatedRoute.snapshot.paramMap.get('id');
+      if (id) {
+        this.todoItemService.updateToDoItem(id, toDoitem).subscribe(() => {
+          this.router.navigate(['/todo-items']);
+        });
+      } else {
+        this.todoItemService.addToDoItem(toDoitem).subscribe(() => {
+          this.router.navigate(['/todo-items']);
+        });
+      }
     }
+  }
+
+  private formatDateForInput(date: Date): string {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return date.getFullYear() + '-' +
+      pad(date.getMonth() + 1) + '-' +
+      pad(date.getDate()) + 'T' +
+      pad(date.getHours()) + ':' +
+      pad(date.getMinutes());
   }
 }

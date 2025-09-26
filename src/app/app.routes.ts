@@ -8,7 +8,8 @@ export const routes: Routes = [
     path: 'todo-items',
     children: [
       { path: '', component: ToDoListComponent },
-      { path: 'new', component: ToDoFormComponent }
+      { path: 'new', component: ToDoFormComponent },
+      { path: 'edit/:id', component: ToDoFormComponent }
     ]
   }
 ];

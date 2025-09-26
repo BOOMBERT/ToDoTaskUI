@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { ToDoItemService } from '../../services/todo-item.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-todo-dialog',
@@ -19,6 +20,7 @@ export class ToDoDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ToDoItem,
     private readonly dialogRef: MatDialogRef<ToDoDialogComponent>,
+    private readonly router: Router,
     private readonly toDoItemService: ToDoItemService,
     private readonly formBuilder: FormBuilder
   ) {
@@ -34,5 +36,10 @@ export class ToDoDialogComponent {
       }
       this.dialogRef.close(this.toDoDialogForm.value.completionPercentage);
     }
+  }
+
+  navigateToEdit(): void {
+    this.dialogRef.close();
+    this.router.navigate(['/todo-items/edit', this.data.id]);
   }
 }

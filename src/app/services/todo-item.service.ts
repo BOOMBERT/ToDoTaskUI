@@ -21,6 +21,14 @@ export class ToDoItemService {
     return this.http.get<ToDoItemResponse>(this.apiUrl);
   }
 
+  getToDoItem(id: string) : Observable<ToDoItem> {
+    return this.http.get<ToDoItem>(`${this.apiUrl}/${id}`);
+  }
+
+  updateToDoItem(id: string, item: ToDoItem) : Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, item);
+  }
+
   markToDoItemAsDone(id: string) : Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${id}/mark-as-done`, {});
   }
