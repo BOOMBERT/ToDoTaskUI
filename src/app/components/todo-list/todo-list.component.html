@@ -24,6 +24,13 @@
                 </mat-card-actions>
             </mat-card>
         }
+        <mat-paginator class="todo-paginator"
+            [length]="pagination.totalItemCount"
+            [pageSize]="pagination.pageSize"
+            [pageIndex]="pagination.currentPage - 1"
+            [pageSizeOptions]="[5, 10, 20, 50]"
+            (page)="onPageChange($event)">
+        </mat-paginator>
     } @else {
         <p>No to-do items available</p>
     }

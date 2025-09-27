@@ -10,10 +10,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ToDoDialogComponent } from '../todo-dialog/todo-dialog.component';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-todo-list',
-  imports: [CommonModule, RouterLink, MatCardModule, MatProgressBarModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, RouterLink, MatCardModule, MatProgressBarModule, MatIconModule, MatButtonModule, MatPaginatorModule],
   templateUrl: './todo-list.component.html',
   styleUrl: './todo-list.component.css'
 })
@@ -26,16 +27,22 @@ export class ToDoListComponent implements OnInit {
     currentPage: 0
   };
 
+  private pageSize = 5;
+  private currentPage = 1;
+
   constructor(
     private readonly toDoItemService: ToDoItemService,
     private readonly dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
-    this.toDoItemService.getToDoItems().subscribe(response => {
-      this.toDoItems = response.data;
-      this.pagination = response.pagination;
-    })
+    this.loadItems();
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageSize = event.pageSize;
+    this.currentPage = event.pageIndex + 1;
+    this.loadItems();
   }
 
   openDialog(enterAnimationDuration: string, exitAnimationDuration: string, toDoItem: ToDoItem): void {
@@ -75,6 +82,13 @@ export class ToDoListComponent implements OnInit {
       if (index !== -1) {
         this.toDoItems.splice(index, 1);
       }
+    });
+  }
+
+  private loadItems(): void {
+    this.toDoItemService.getToDoItems(this.currentPage, this.pageSize).subscribe(response => {
+      this.toDoItems = response.data;
+      this.pagination = response.pagination;
     });
   }
 }

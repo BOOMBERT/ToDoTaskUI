@@ -17,8 +17,13 @@ export class ToDoItemService {
     return this.http.post<void>(this.apiUrl, item);
   }
 
-  getToDoItems() : Observable<ToDoItemResponse> {
-    return this.http.get<ToDoItemResponse>(this.apiUrl);
+  getToDoItems(pageNumber: number, pageSize: number): Observable<ToDoItemResponse> {
+    return this.http.get<ToDoItemResponse>(this.apiUrl, {
+      params: {
+        pageNumber: pageNumber,
+        pageSize: pageSize
+      }
+    });
   }
 
   getToDoItem(id: string) : Observable<ToDoItem> {

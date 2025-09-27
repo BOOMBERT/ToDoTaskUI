@@ -15,3 +15,8 @@
     justify-content: space-between;
     align-items: center;
 }
+
+.todo-paginator {
+    background-color: inherit;
+    margin: 24px 0;
+}
