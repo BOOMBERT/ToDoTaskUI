@@ -9,7 +9,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: ToDoListComponent },
       { path: 'new', component: ToDoFormComponent },
-      { path: 'edit/:id', component: ToDoFormComponent }
+      { path: ':id/edit', component: ToDoFormComponent }
     ]
   }
 ];

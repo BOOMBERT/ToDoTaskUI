@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/internal/Observable';
@@ -9,17 +9,17 @@ import { ToDoItem } from '../models/todo-item';
   providedIn: 'root'
 })
 export class ToDoItemService {
-  private readonly apiUrl = environment.apiUrl + '/todoitems';
-
-  constructor(private readonly http: HttpClient) { }
+  private readonly _apiUrl = environment.apiUrl + '/todoitems';
+  private readonly _httpClient = inject(HttpClient);
 
   addToDoItem(item: ToDoItem): Observable<void> {
-    return this.http.post<void>(this.apiUrl, item);
+    return this._httpClient.post<void>(this._apiUrl, item);
   }
 
-  getToDoItems(pageNumber: number, pageSize: number): Observable<ToDoItemResponse> {
-    return this.http.get<ToDoItemResponse>(this.apiUrl, {
+  getToDoItems(searchPhrase: string, pageNumber: number, pageSize: number): Observable<ToDoItemResponse> {
+    return this._httpClient.get<ToDoItemResponse>(this._apiUrl, {
       params: {
+        searchPhrase: searchPhrase,
         pageNumber: pageNumber,
         pageSize: pageSize
       }
@@ -27,22 +27,22 @@ export class ToDoItemService {
   }
 
   getToDoItem(id: string) : Observable<ToDoItem> {
-    return this.http.get<ToDoItem>(`${this.apiUrl}/${id}`);
+    return this._httpClient.get<ToDoItem>(`${this._apiUrl}/${id}`);
   }
 
   updateToDoItem(id: string, item: ToDoItem) : Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}`, item);
+    return this._httpClient.put<void>(`${this._apiUrl}/${id}`, item);
   }
 
   markToDoItemAsDone(id: string) : Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/mark-as-done`, {});
+    return this._httpClient.patch<void>(`${this._apiUrl}/${id}/mark-as-done`, {});
   }
 
   updateToDoItemCompletionPercentage(id: string, newPercentage: number): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/completion-percentage`, { completionPercentage: newPercentage });
+    return this._httpClient.patch<void>(`${this._apiUrl}/${id}/completion-percentage`, { completionPercentage: newPercentage });
   }
 
   deleteToDoItem(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this._httpClient.delete<void>(`${this._apiUrl}/${id}`);
   }
 }

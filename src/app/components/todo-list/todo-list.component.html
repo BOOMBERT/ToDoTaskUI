@@ -1,7 +1,20 @@
 <div class="container">
-    <button mat-stroked-button style="margin-bottom: 2rem;" [routerLink]="['/todo-items/new']">Add new</button>
+    <div class="todo-header">
+        <button class="todo-header-button" mat-stroked-button style="margin-bottom: 2rem;" [routerLink]="['/todo-items/new']">Add new</button>
 
-    @if (toDoItems.length > 0) {
+        <mat-form-field class="todo-header-search">
+            <mat-label>Search...</mat-label>
+            <input matInput type="text" [formControl]="searchPhraseControl">
+            @if (searchPhraseControl.value) {
+                <button matSuffix mat-icon-button (click)="clearSearchPhrase()">
+                    <mat-icon>close</mat-icon>
+                </button>
+            }
+        </mat-form-field>
+    </div>
+
+    @let toDoItems = toDoItems$ | async;
+    @if (toDoItems && toDoItems.length > 0) {
         @for (toDoItem of toDoItems; track toDoItem.id) {
             <mat-card appearance="outlined" class="todo-card" (click)="openDialog('250ms', '250ms', toDoItem)">
                 <mat-card-header class="todo-card-header">
@@ -13,7 +26,7 @@
                         <button mat-icon-button (click)="deleteToDoItem(toDoItem.id); $event.stopPropagation()">
                             <mat-icon>delete</mat-icon>
                         </button>
-                        <button mat-icon-button (click)="markToDoItemAsDone(toDoItem.id, toDoItem.completionPercentage); $event.stopPropagation()">
+                        <button mat-icon-button (click)="markToDoItemAsDone(toDoItem); $event.stopPropagation()">
                             <mat-icon>check_circle</mat-icon>
                         </button>
                     </div>
@@ -24,13 +37,17 @@
                 </mat-card-actions>
             </mat-card>
         }
-        <mat-paginator class="todo-paginator"
-            [length]="pagination.totalItemCount"
-            [pageSize]="pagination.pageSize"
-            [pageIndex]="pagination.currentPage - 1"
-            [pageSizeOptions]="[5, 10, 20, 50]"
-            (page)="onPageChange($event)">
-        </mat-paginator>
+        
+        @let pagination = pagination$ | async;
+        @if (pagination) {
+            <mat-paginator class="todo-pagination"
+                [length]="pagination.totalItemCount"
+                [pageSize]="pagination.pageSize"
+                [pageIndex]="pagination.currentPage - 1"
+                [pageSizeOptions]="[5, 10, 20, 50]"
+                (page)="onPageChange($event)">
+            </mat-paginator>
+        }
     } @else {
         <p>No to-do items available</p>
     }

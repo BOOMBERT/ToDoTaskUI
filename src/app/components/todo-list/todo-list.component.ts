@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { ToDoItemService } from '../../services/todo-item.service';
 import { ToDoItem } from '../../models/todo-item';
 import { PaginationInfo } from '../../models/pagination-info';
@@ -11,42 +11,67 @@ import { RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ToDoDialogComponent } from '../todo-dialog/todo-dialog.component';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, shareReplay, startWith, switchMap, tap } from 'rxjs';
+import { PaginationParams } from '../../interfaces/pagination-params';
 
 @Component({
   selector: 'app-todo-list',
-  imports: [CommonModule, RouterLink, MatCardModule, MatProgressBarModule, MatIconModule, MatButtonModule, MatPaginatorModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatCardModule,
+    MatProgressBarModule,
+    MatIconModule,
+    MatButtonModule,
+    MatPaginatorModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './todo-list.component.html',
-  styleUrl: './todo-list.component.css'
+  styleUrl: './todo-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToDoListComponent implements OnInit {
-  toDoItems: ToDoItem[] = [];
-  pagination: PaginationInfo = {
-    totalItemCount: 0,
-    totalPageCount: 0,
-    pageSize: 0,
-    currentPage: 0
-  };
+  toDoItems$: Observable<ToDoItem[]> = of();
+  pagination$: Observable<PaginationInfo> = of();
 
-  private pageSize = 5;
-  private currentPage = 1;
+  private _paginationSubject = new BehaviorSubject<PaginationParams>({ pageNumber: 1, pageSize: 5 });
+  private readonly _toDoItemService = inject(ToDoItemService);
+  private readonly _dialog = inject(MatDialog);
 
-  constructor(
-    private readonly toDoItemService: ToDoItemService,
-    private readonly dialog: MatDialog
-  ) { }
+  searchPhraseControl = new FormControl('', [Validators.maxLength(512)]);
 
   ngOnInit(): void {
-    this.loadItems();
+    const searchPhrase$ = this.searchPhraseControl.valueChanges.pipe(
+      debounceTime(1000),
+      distinctUntilChanged(),
+      startWith(this.searchPhraseControl.value ?? ''),
+      tap(() => this._paginationSubject.next({ pageNumber: 1, pageSize: this._paginationSubject.value.pageSize }))
+    );
+
+    const pagination$ = this._paginationSubject.asObservable();
+
+    const response$ = combineLatest([searchPhrase$, pagination$]).pipe(
+      switchMap(([searchPhrase, { pageNumber, pageSize }]) =>
+        this._toDoItemService.getToDoItems(searchPhrase ?? '', pageNumber, pageSize)
+      ),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.toDoItems$ = response$.pipe(map(response => response.data));
+    this.pagination$ = response$.pipe(map(response => response.pagination));
   }
 
   onPageChange(event: PageEvent): void {
-    this.pageSize = event.pageSize;
-    this.currentPage = event.pageIndex + 1;
-    this.loadItems();
+    this._paginationSubject.next({ pageNumber: event.pageIndex + 1, pageSize: event.pageSize });
   }
 
   openDialog(enterAnimationDuration: string, exitAnimationDuration: string, toDoItem: ToDoItem): void {
-    const dialogRef = this.dialog.open(ToDoDialogComponent, {
+    const dialogRef = this._dialog.open(ToDoDialogComponent, {
       width: '80%',
       data: toDoItem,
       enterAnimationDuration,
@@ -55,40 +80,30 @@ export class ToDoListComponent implements OnInit {
       autoFocus: false
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (typeof result === 'number') {
-        const item = this.toDoItems.find(item => item.id === toDoItem.id);
-        if (item && item.completionPercentage !== result) {
-          item.completionPercentage = result;
-        }
-      }
-    });
+    dialogRef.afterClosed().pipe(
+      filter((result) => typeof result === 'number' && toDoItem.completionPercentage !== result),
+      switchMap((result) => this._toDoItemService.updateToDoItemCompletionPercentage(toDoItem.id, result)),
+      tap(() => this._paginationSubject.next(this._paginationSubject.value))
+    ).subscribe();
   }
 
-  markToDoItemAsDone(id: string, currentCompletionPercentage: number): void {
-    if (currentCompletionPercentage >= 100) return;
-
-    this.toDoItemService.markToDoItemAsDone(id).subscribe(() => {
-      const item = this.toDoItems.find(item => item.id === id);
-      if (item) {
-        item.completionPercentage = 100;
-      }
-    });
+  markToDoItemAsDone(toDoItem: ToDoItem): void {
+    if (toDoItem.completionPercentage === 100) {
+      return;
+    }
+    
+    this._toDoItemService.markToDoItemAsDone(toDoItem.id).pipe(
+      tap(() => this._paginationSubject.next(this._paginationSubject.value))
+    ).subscribe();
   }
 
   deleteToDoItem(id: string): void {
-    this.toDoItemService.deleteToDoItem(id).subscribe(() => {
-      const index = this.toDoItems.findIndex(item => item.id === id);
-      if (index !== -1) {
-        this.toDoItems.splice(index, 1);
-      }
-    });
+    this._toDoItemService.deleteToDoItem(id).pipe(
+      tap(() => this._paginationSubject.next({ pageNumber: 1, pageSize: this._paginationSubject.value.pageSize }))
+    ).subscribe();
   }
 
-  private loadItems(): void {
-    this.toDoItemService.getToDoItems(this.currentPage, this.pageSize).subscribe(response => {
-      this.toDoItems = response.data;
-      this.pagination = response.pagination;
-    });
+  clearSearchPhrase() {
+    this.searchPhraseControl.setValue('');
   }
 }

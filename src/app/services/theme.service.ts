@@ -1,32 +1,32 @@
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, signal } from '@angular/core';
-
-export type Theme = 'light' | 'dark';
+import { inject, Inject, Injectable, signal } from '@angular/core';
+import { Theme } from '../enums/theme';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ThemeService {
-  public readonly currentTheme = signal<Theme>('light');
-
-  constructor(@Inject(DOCUMENT) private readonly document: Document) {
+  private readonly _document = inject(DOCUMENT);
+  readonly currentTheme = signal<Theme>(Theme.Light);
+  
+  constructor() {
     this.setTheme(this.getThemeFromLocalStorage());
   }
 
   toggleTheme(): void {
-    if (this.currentTheme() === 'light') {
-      this.setTheme('dark');
+    if (this.currentTheme() === Theme.Light) {
+      this.setTheme(Theme.Dark);
     } else {
-      this.setTheme('light');
+      this.setTheme(Theme.Light);
     }
   }
 
   setTheme(theme: Theme): void {
     this.currentTheme.set(theme);
-    if (theme === 'dark') {
-      this.document.documentElement.classList.add('dark-mode');
+    if (theme === Theme.Dark) {
+      this._document.documentElement.classList.add('dark-mode');
     } else {
-      this.document.documentElement.classList.remove('dark-mode');
+      this._document.documentElement.classList.remove('dark-mode');
     }
     this.setThemeInLocalStorage(theme);
   }
@@ -36,6 +36,6 @@ export class ThemeService {
   }
 
   getThemeFromLocalStorage(): Theme {
-    return localStorage.getItem('theme') as Theme ?? 'light';
+    return localStorage.getItem('theme') as Theme ?? Theme.Light;
   }
 }

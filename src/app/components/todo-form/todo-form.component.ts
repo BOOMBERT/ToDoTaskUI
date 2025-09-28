@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToDoItemValidator } from '../../validators/todo-item.validator';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -13,32 +13,31 @@ import { ToDoItem } from '../../models/todo-item';
   selector: 'app-todo-form',
   imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatButtonModule],
   templateUrl: './todo-form.component.html',
-  styleUrl: './todo-form.component.css'
+  styleUrl: './todo-form.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToDoFormComponent implements OnInit {
+  private readonly _formBuilder = inject(FormBuilder);
+  private readonly _router = inject(Router);
+  private readonly _activatedRoute = inject(ActivatedRoute);
+  private readonly _todoItemService = inject(ToDoItemService);
+
   toDoForm: FormGroup = new FormGroup({});
 
-  constructor(
-    private readonly formBuilder: FormBuilder,
-    private readonly router: Router,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly todoItemService: ToDoItemService
-  ) { }
-
   ngOnInit(): void {
-    this.toDoForm = this.formBuilder.group({
+    this.toDoForm = this._formBuilder.group({
       title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(128), Validators.pattern(/\S+/)]],
       description: ['', [Validators.maxLength(512)]],
       ExpiryDate: [null, [Validators.required, ToDoItemValidator.futureDate]],
       completionPercentage: [0, [Validators.required, Validators.pattern(/^100(\.0{0,2})?$|^([0-9]|[1-9][0-9])(\.[0-9]{0,2})?$/)]],
     });
 
-    let id = this.activatedRoute.snapshot.paramMap.get('id');
+    let id = this._activatedRoute.snapshot.paramMap.get('id');
     if (id) {
-      this.todoItemService.getToDoItem(id).subscribe(item => {
+      this._todoItemService.getToDoItem(id).subscribe(toDoItem => {
         this.toDoForm.patchValue({
-          ...item,
-          ExpiryDate: this.formatDateForInput(new Date(item.expiryDateTimeUtc))
+          ...toDoItem,
+          ExpiryDate: this.formatDateForInput(new Date(toDoItem.expiryDateTimeUtc))
         });
       });
     }
@@ -50,14 +49,14 @@ export class ToDoFormComponent implements OnInit {
       const toDoItemExpiryDate: Date = new Date(this.toDoForm.value.ExpiryDate);
       toDoitem.expiryDateTimeUtc = toDoItemExpiryDate.toISOString();
 
-      let id = this.activatedRoute.snapshot.paramMap.get('id');
+      let id = this._activatedRoute.snapshot.paramMap.get('id');
       if (id) {
-        this.todoItemService.updateToDoItem(id, toDoitem).subscribe(() => {
-          this.router.navigate(['/todo-items']);
+        this._todoItemService.updateToDoItem(id, toDoitem).subscribe(() => {
+          this._router.navigate(['/todo-items']);
         });
       } else {
-        this.todoItemService.addToDoItem(toDoitem).subscribe(() => {
-          this.router.navigate(['/todo-items']);
+        this._todoItemService.addToDoItem(toDoitem).subscribe(() => {
+          this._router.navigate(['/todo-items']);
         });
       }
     }

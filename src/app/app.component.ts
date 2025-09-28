@@ -11,6 +11,5 @@ import { ThemeService } from './services/theme.service';
 })
 export class AppComponent {
   title = 'ToDoTaskUI';
-
-  constructor(readonly themeService: ThemeService) { }
+  readonly themeService = inject(ThemeService);
 }
